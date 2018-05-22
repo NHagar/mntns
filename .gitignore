@@ -1,5 +1,5 @@
 # From https://github.com/deis/example-python-flask/blob/master/.gitignore
-
+*.ipynb
 *.py[co]
 *.DS_*
 # Packages
