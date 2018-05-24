@@ -1,36 +1,42 @@
+import os
 import json
-import requests
+from datetime import date, timedelta
 import tweepy
+import praw
 from newsapi import NewsApiClient
 
 def twitter():
     tweets = []
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
+    auth = tweepy.OAuthHandler(os.environ.get("CONSUMER_KEY"), os.environ.get("CONSUMER_SECRET"))
+    auth.set_access_token(os.environ.get("ACCESS_TOKEN"), os.environ.get("ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
     results = api.search('psmag -filter:retweets -from:pacificstand', rpp=100)
     for i in results:
-    obj = json.loads(json.dumps(i._json))
-    if obj['retweet_count'] + obj['favorite_count'] > 0:
-        tweets.append([obj['retweet_count'], obj['favorite_count'], 'https://twitter.com/statuses/' + obj['id_str'], obj['user']['name']])
+        obj = json.loads(json.dumps(i._json))
+        if obj['retweet_count'] + obj['favorite_count'] > 0:
+            tweets.append([obj['retweet_count'], obj['favorite_count'], 'https://twitter.com/statuses/' + obj['id_str'], obj['user']['name']])
     return tweets
 
-def reddit():
+def reddits():
     posts = []
-    f = requests.get("https://www.reddit.com/search.json?q=psmag.com&sort=new")
-    resp = f.text
-    j = json.loads(resp)
-    entries = j['data']['children']
-    for i in entries:
-        if 'bot' not in i['data']['url']:
-            posts.append([i['data']['url'], i['data']['score'], i['data']['subreddit']])
+    reddit = praw.Reddit(client_id=os.environ.get('R_CLIENT_ID'),
+                         client_secret=os.environ.get('R_CLIENT_SECRET'),
+                         password=os.environ.get('R_PASSWORD'),
+                         user_agent='uses search API to track keyword mentions',
+                         username=os.environ.get('R_USER'))
+    for submission in reddit.subreddit('all').search('psmag.com', sort='new'):
+        if 'bot' not in submission.url:
+            posts.append([submission.shortlink, submission.score, submission.subreddit.display_name])
     return posts
 
 def web():
+    today = date.today().strftime('%Y-%m-%d')
+    yesterday = (date.today() - timedelta(1)).strftime('%Y-%m-%d')
+    newsapi = NewsApiClient(api_key=os.environ.get("API_KEY"))
     mentions = []
     all_articles = newsapi.get_everything(q='"Pacific Standard" -Time',
-                                          from_param='2018-05-01',
-                                          to='2018-05-22',
+                                          from_param=yesterday,
+                                          to=today,
                                           language='en',
                                           sort_by='relevancy',
                                           page_size=100)
@@ -42,6 +48,8 @@ def web():
 def main():
     results = {}
     results['twitter'] = twitter()
-    results['reddit'] = reddit()
+    results['reddit'] = reddits()
     results['web'] = web()
     print(results)
+
+main()
