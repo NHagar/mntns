@@ -14,7 +14,7 @@ def twitter():
     for i in results:
         obj = json.loads(json.dumps(i._json))
         if obj['retweet_count'] + obj['favorite_count'] > 0:
-            tweets.append([obj['retweet_count'], obj['favorite_count'], 'https://twitter.com/statuses/' + obj['id_str'], obj['user']['name']])
+            tweets.append('https://twitter.com/statuses/' + obj['id_str'], obj['user']['name'], [obj['retweet_count'], obj['favorite_count']])
     return tweets
 
 def reddits():
@@ -42,7 +42,7 @@ def web():
                                           page_size=100)
     for i in all_articles['articles']:
         if i['source']['name'] != 'Psmag.com':
-            mentions.append([i['source']['name'], i['url']])
+            mentions.append([i['url'], i['source']['name']])
     return mentions
 
 def main():
