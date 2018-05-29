@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import date, timedelta
+import psycopg2
 import tweepy
 import praw
 from newsapi import NewsApiClient
@@ -14,7 +15,7 @@ def twitter():
     for i in results:
         obj = json.loads(json.dumps(i._json))
         if obj['retweet_count'] + obj['favorite_count'] > 0:
-            tweets.append('https://twitter.com/statuses/' + obj['id_str'], obj['user']['name'], [obj['retweet_count'], obj['favorite_count']])
+            tweets.append(str(('https://twitter.com/statuses/' + obj['id_str'], obj['user']['name'], obj['retweet_count'], obj['favorite_count'])))
     return tweets
 
 def reddits():
@@ -26,7 +27,7 @@ def reddits():
                          username=os.environ.get('R_USER'))
     for submission in reddit.subreddit('all').search('psmag.com', sort='new'):
         if 'bot' not in submission.url:
-            posts.append([submission.shortlink, submission.score, submission.subreddit.display_name])
+            posts.append(str((submission.shortlink, submission.score, submission.subreddit.display_name)))
     return posts
 
 def web():
@@ -42,7 +43,7 @@ def web():
                                           page_size=100)
     for i in all_articles['articles']:
         if i['source']['name'] != 'Psmag.com':
-            mentions.append([i['url'], i['source']['name']])
+            mentions.append(str((i['url'], i['source']['name'])))
     return mentions
 
 def main():
@@ -50,6 +51,33 @@ def main():
     results['twitter'] = twitter()
     results['reddit'] = reddits()
     results['web'] = web()
-    print(results)
+    return results
 
-main()
+def database():
+    data = main()
+    conn = psycopg2.connect("dbname=" + os.environ.get('DB_NAME')
+                          + " user=" + os.environ.get('DB_USER')
+                          + " host=" + os.environ.get('DB_HOST')
+                          + " password=" + os.environ.get('DB_PASS'))
+    cur = conn.cursor()
+    print(data)
+    for i in data['twitter']:
+        try:
+            cur.execute("INSERT INTO twitter VALUES " + i)
+            conn.commit()
+        except Exception:
+            print("Already seen tweet")
+    for i in data['reddit']:
+        try:
+            cur.execute("INSERT INTO reddit VALUES " + i)
+            conn.commit()
+        except Exception:
+            print("Already seen reddit post")
+    for i in data['web']:
+        try:
+            cur.execute("INSERT INTO newsapi VALUES " + i)
+            conn.commit()
+        except Exception:
+            print("Already seen web mention")
+
+database()

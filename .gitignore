@@ -1,4 +1,5 @@
 # From https://github.com/deis/example-python-flask/blob/master/.gitignore
+*.env
 *.ipynb
 *.py[co]
 *.DS_*
