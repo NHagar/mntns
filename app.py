@@ -55,10 +55,8 @@ def main():
 
 def database():
     data = main()
-    conn = psycopg2.connect("dbname=" + os.environ.get('DB_NAME')
-                          + " user=" + os.environ.get('DB_USER')
-                          + " host=" + os.environ.get('DB_HOST')
-                          + " password=" + os.environ.get('DB_PASS'))
+    db_url = os.environ.get("DATABASE_URL")
+    conn = psycopg2.connect(db_url)
     cur = conn.cursor()
     print(data)
     for i in data['twitter']:
