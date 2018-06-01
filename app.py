@@ -133,7 +133,7 @@ def send():
             % (response.status_code, response.text)
     )
 
-if datetime.datetime.now().hour == 12:
+if datetime.datetime.now().hour == 19:
     database()
     send()
 else:
