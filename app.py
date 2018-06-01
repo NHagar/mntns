@@ -61,20 +61,23 @@ def database():
     for i in data['twitter']:
         try:
             cur.execute("INSERT INTO twitter VALUES " + i)
+        except psycopg2.IntegrityError:
+            conn.rollback()
+        else:
             conn.commit()
-        except Exception:
-            print("Already seen tweet")
     for i in data['reddit']:
         try:
             cur.execute("INSERT INTO reddit VALUES " + i)
+        except psycopg2.IntegrityError:
+            conn.rollback()
+        else:
             conn.commit()
-        except Exception:
-            print("Already seen reddit post")
     for i in data['web']:
-        #try:
-        cur.execute("INSERT INTO newsapi VALUES " + i)
-        conn.commit()
-        #except Exception:
-        #    print("Already seen web mention")
+        try:
+            cur.execute("INSERT INTO newsapi VALUES " + i)
+        except psycopg2.IntegrityError:
+            conn.rollback()
+        else:
+            conn.commit()
 
 database()
