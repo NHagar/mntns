@@ -1,10 +1,15 @@
 import os
 import json
-from datetime import date, timedelta
+import datetime
 import psycopg2
 import tweepy
 import praw
+import requests
 from newsapi import NewsApiClient
+
+db_url = os.environ.get("DATABASE_URL")
+conn = psycopg2.connect(db_url)
+cur = conn.cursor()
 
 def twitter():
     tweets = []
@@ -31,8 +36,8 @@ def reddits():
     return posts
 
 def web():
-    today = date.today().strftime('%Y-%m-%d')
-    yesterday = (date.today() - timedelta(1)).strftime('%Y-%m-%d')
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    yesterday = (datetime.date.today() - datetime.timedelta(1)).strftime('%Y-%m-%d')
     newsapi = NewsApiClient(api_key=os.environ.get("API_KEY"))
     mentions = []
     all_articles = newsapi.get_everything(q='"Pacific Standard" -Time',
@@ -55,9 +60,6 @@ def main():
 
 def database():
     data = main()
-    db_url = os.environ.get("DATABASE_URL")
-    conn = psycopg2.connect(db_url)
-    cur = conn.cursor()
     for i in data['twitter']:
         try:
             cur.execute("INSERT INTO twitter VALUES " + i)
@@ -80,4 +82,59 @@ def database():
         else:
             conn.commit()
 
-database()
+def build():
+    message = {'attachments': []}
+    cur.execute("SELECT * FROM twitter")
+    tweets = cur.fetchall()
+    tw = {
+        "fallback": "Twitter mentions",
+        "title": "Twitter",
+        "fields": []
+    }
+    for i in tweets:
+        tw['fields'].append({
+            "value": "<%s|%s>" % (i[0], i[1])
+        })
+    cur.execute("SELECT * FROM reddit")
+    rposts = cur.fetchall()
+    re = {
+        "fallback": "Reddit mentions",
+        "title": "Reddit",
+        "fields": []
+    }
+    for i in rposts:
+        re['fields'].append({
+            "value": "<%s|%s>" % (i[0], i[2])
+        })
+    cur.execute("SELECT * FROM newsapi")
+    mentions = cur.fetchall()
+    web = {
+        "fallback": "Web mentions",
+        "title": "Web",
+        "fields": []
+    }
+    for i in mentions:
+        web['fields'].append({
+            "value": "<%s|%s>" % (i[0], i[1])
+        })
+    message['attachments'].extend([tw, re, web])
+    return message
+
+def send():
+    payload = build()
+    webhook_url = os.environ.get("SLACK_URL")
+    response = requests.post(
+        webhook_url, data=json.dumps(payload),
+        headers={'Content-Type': 'application/json'}
+    )
+    if response.status_code != 200:
+        raise ValueError(
+            'Request to slack returned an error %s, the response is:\n%s'
+            % (response.status_code, response.text)
+    )
+
+if datetime.datetime.now().hour == 12:
+    database()
+    send()
+else:
+    database()
