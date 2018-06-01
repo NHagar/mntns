@@ -32,7 +32,9 @@ def reddits():
 
 def web():
     today = date.today().strftime('%Y-%m-%d')
+    print(today)
     yesterday = (date.today() - timedelta(1)).strftime('%Y-%m-%d')
+    print(yesterday)
     newsapi = NewsApiClient(api_key=os.environ.get("API_KEY"))
     mentions = []
     all_articles = newsapi.get_everything(q='"Pacific Standard" -Time',
@@ -42,7 +44,6 @@ def web():
                                           sort_by='relevancy',
                                           page_size=100)
     for i in all_articles['articles']:
-        print(i)
         if i['source']['name'] != 'Psmag.com':
             mentions.append(str((i['url'], i['source']['name'])))
     print(mentions)
@@ -79,4 +80,5 @@ def database():
         except Exception:
             print("Already seen web mention")
 
-database()
+#database()
+web()
