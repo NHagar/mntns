@@ -84,7 +84,7 @@ def database():
 
 def build():
     message = {'attachments': []}
-    cur.execute("SELECT * FROM twitter")
+    cur.execute("SELECT * FROM twitter WHERE shared=FALSE")
     tweets = cur.fetchall()
     tw = {
         "fallback": "Twitter mentions",
@@ -95,7 +95,7 @@ def build():
         tw['fields'].append({
             "value": "<%s|%s>" % (i[0], i[1])
         })
-    cur.execute("SELECT * FROM reddit")
+    cur.execute("SELECT * FROM reddit WHERE shared=FALSE")
     rposts = cur.fetchall()
     re = {
         "fallback": "Reddit mentions",
@@ -106,18 +106,24 @@ def build():
         re['fields'].append({
             "value": "<%s|%s>" % (i[0], i[2])
         })
-    cur.execute("SELECT * FROM newsapi")
+    cur.execute("SELECT * FROM newsapi WHERE shared=FALSE")
     mentions = cur.fetchall()
-    web = {
+    wb = {
         "fallback": "Web mentions",
         "title": "Web",
         "fields": []
     }
     for i in mentions:
-        web['fields'].append({
+        wb['fields'].append({
             "value": "<%s|%s>" % (i[0], i[1])
         })
-    message['attachments'].extend([tw, re, web])
+    message['attachments'].extend([tw, re, wb])
+    cur.execute("UPDATE twitter SET shared=TRUE WHERE shared=FALSE")
+    conn.commit()
+    cur.execute("UPDATE reddit SET shared=TRUE WHERE shared=FALSE")
+    conn.commit()
+    cur.execute("UPDATE newsapi SET shared=TRUE WHERE shared=FALSE")
+    conn.commit()
     return message
 
 def send():
