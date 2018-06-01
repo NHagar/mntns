@@ -71,10 +71,10 @@ def database():
         except Exception:
             print("Already seen reddit post")
     for i in data['web']:
-        try:
-            cur.execute("INSERT INTO newsapi VALUES " + i)
-            conn.commit()
-        except Exception:
-            print("Already seen web mention")
+        #try:
+        cur.execute("INSERT INTO newsapi VALUES " + i)
+        conn.commit()
+        #except Exception:
+        #    print("Already seen web mention")
 
 database()
