@@ -44,6 +44,7 @@ def web():
     for i in all_articles['articles']:
         if i['source']['name'] != 'Psmag.com':
             mentions.append(str((i['url'], i['source']['name'])))
+    print(mentions)
     return mentions
 
 def main():
@@ -58,7 +59,6 @@ def database():
     db_url = os.environ.get("DATABASE_URL")
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
-    print(data)
     for i in data['twitter']:
         try:
             cur.execute("INSERT INTO twitter VALUES " + i)
