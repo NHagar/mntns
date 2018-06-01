@@ -42,6 +42,7 @@ def web():
                                           sort_by='relevancy',
                                           page_size=100)
     for i in all_articles['articles']:
+        print(i)
         if i['source']['name'] != 'Psmag.com':
             mentions.append(str((i['url'], i['source']['name'])))
     print(mentions)
