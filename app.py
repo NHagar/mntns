@@ -20,7 +20,14 @@ def twitter():
     for i in results:
         obj = json.loads(json.dumps(i._json))
         if obj['retweet_count'] + obj['favorite_count'] > 0:
-            tweets.append(str(('https://twitter.com/statuses/' + obj['id_str'], obj['user']['name'], obj['retweet_count'], obj['favorite_count'])))
+            tweets.append(str(
+                            ('https://twitter.com/statuses/' + obj['id_str'],
+                             obj['user']['name'],
+                             obj['retweet_count'],
+                             obj['favorite_count'],
+                             'FALSE',
+                             obj['user']['verified']
+                             )))
     return tweets
 
 def reddits():
