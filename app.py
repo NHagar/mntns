@@ -90,41 +90,50 @@ def database():
             conn.commit()
 
 def build():
-    message = {'attachments': []}
+    message = {
+        'text': 'Mentions for ' + str(datetime.date.today()),
+        'attachments': []
+    }
     cur.execute("SELECT * FROM twitter WHERE shared=FALSE")
     tweets = cur.fetchall()
+    verified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == True]
+    unverified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == False]
     tw = {
         "fallback": "Twitter mentions",
-        "title": "Twitter",
-        "fields": []
+        "color": "#4286f4",
+        "title": "Twitter (%s)" % len(tweets),
+        "fields": [
+            {
+                "title": "Verified",
+                "value": '\n'.join(verified)
+            },
+            {
+                "title": "Other",
+                "value": ', '.join(unverified)
+            }
+        ]
     }
-    for i in tweets:
-        tw['fields'].append({
-            "value": "<%s|%s>" % (i[0], i[1])
-        })
     cur.execute("SELECT * FROM reddit WHERE shared=FALSE")
     rposts = cur.fetchall()
     re = {
         "fallback": "Reddit mentions",
-        "title": "Reddit",
-        "fields": []
+        "color": "#d15f36",
+        "title": "Reddit (%s)" % len(rposts),
+        "text": ""
     }
     for i in rposts:
-        re['fields'].append({
-            "value": "<%s|%s>" % (i[0], i[2])
-        })
+        re['text']+= "<%s|%s>\n" % (i[0], i[2])
     cur.execute("SELECT * FROM newsapi WHERE shared=FALSE")
     mentions = cur.fetchall()
     wb = {
         "fallback": "Web mentions",
-        "title": "Web",
-        "fields": []
+        "color": "#919191",
+        "title": "Web (%s)" % len(mentions),
+        "text": ""
     }
     for i in mentions:
-        wb['fields'].append({
-            "value": "<%s|%s>" % (i[0], i[1])
-        })
-    message['attachments'].extend([tw, re, wb])
+        wb['text']+= "<%s|%s>\n" % (i[0], i[1])
+    message['attachments'].extend([wb, re, tw])
     cur.execute("UPDATE twitter SET shared=TRUE WHERE shared=FALSE")
     conn.commit()
     cur.execute("UPDATE reddit SET shared=TRUE WHERE shared=FALSE")
