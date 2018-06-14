@@ -98,15 +98,21 @@ def build():
     tweets = cur.fetchall()
     verified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == True]
     unverified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == False]
-    tw = {
-        "fallback": "Twitter mentions",
+    twv = {
+        "fallback": "Twitter mentions, verified",
         "color": "#4286f4",
         "title": "Twitter (%s)" % len(tweets),
         "fields": [
             {
                 "title": "Verified",
                 "value": '\n'.join(verified)
-            },
+            }
+        ]
+    }
+    two = {
+        "fallback": "Twitter mentions, other",
+        "color": "#4286f4",
+        "fields": [
             {
                 "title": "Other",
                 "value": ', '.join(unverified)
@@ -133,7 +139,7 @@ def build():
     }
     for i in mentions:
         wb['text']+= "<%s|%s>\n" % (i[0], i[1])
-    message['attachments'].extend([wb, re, tw])
+    message['attachments'].extend([wb, re, twv, two])
     cur.execute("UPDATE twitter SET shared=TRUE WHERE shared=FALSE")
     conn.commit()
     cur.execute("UPDATE reddit SET shared=TRUE WHERE shared=FALSE")
@@ -155,7 +161,7 @@ def send():
             % (response.status_code, response.text)
     )
 
-if datetime.datetime.now().hour == 19:
+if datetime.datetime.now().hour == 21:
     database()
     send()
 else:
