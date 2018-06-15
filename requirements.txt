@@ -1,6 +1,7 @@
 appnope==0.1.0
 asn1crypto==0.24.0
 backcall==0.1.0
+bitly-api==0.3
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
@@ -31,6 +32,7 @@ ptyprocess==0.5.2
 pycparser==2.18
 Pygments==2.2.0
 pyOpenSSL==18.0.0
+pyshorteners==0.6.1
 PySocks==1.6.8
 python-dateutil==2.7.3
 pyzmq==17.0.0

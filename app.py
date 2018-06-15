@@ -7,10 +7,13 @@ import tweepy
 import praw
 import requests
 from newsapi import NewsApiClient
+from pyshorteners import Shortener
 
 db_url = os.environ.get("DATABASE_URL")
 conn = psycopg2.connect(db_url)
 cur = conn.cursor()
+
+shortener = Shortener('Tinyurl')
 
 def twitter():
     tweets = []
@@ -98,7 +101,7 @@ def build():
     cur.execute("SELECT * FROM twitter WHERE shared=FALSE")
     tweets = cur.fetchall()
     verified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == True]
-    unverified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == False]
+    unverified = ['<%s|%s>' % (shortener.short(i[0]), i[1]) for i in tweets if i[5] == False]
     tw = {
         "fallback": "Twitter mentions",
         "color": "#4286f4",
@@ -110,11 +113,8 @@ def build():
             },
             {
                 "title": "Other",
-                "value": ', '.join(unverified[0:math.floor(len(unverified)/2)])
+                "value": ', '.join(unverified)
             },
-            {
-                "value": ', '.join(unverified[math.floor(len(unverified)/2):])
-            }
         ]
     }
     cur.execute("SELECT * FROM reddit WHERE shared=FALSE")
@@ -159,7 +159,7 @@ def send():
             % (response.status_code, response.text)
     )
 
-if datetime.datetime.now().hour == 0:
+if datetime.datetime.now().hour == 19:
     database()
     send()
 else:
