@@ -13,7 +13,7 @@ db_url = os.environ.get("DATABASE_URL")
 conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 
-shortener = Shortener('Isgd')
+shortener = Shortener('Dagd')
 
 def twitter():
     tweets = []
