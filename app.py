@@ -20,7 +20,7 @@ def twitter():
     auth = tweepy.OAuthHandler(os.environ.get("CONSUMER_KEY"), os.environ.get("CONSUMER_SECRET"))
     auth.set_access_token(os.environ.get("ACCESS_TOKEN"), os.environ.get("ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
-    results = api.search('psmag -filter:retweets -from:pacificstand', rpp=100)
+    results = api.search('psmag -filter:retweets -from:pacificstand', count=100)
     for i in results:
         obj = json.loads(json.dumps(i._json))
         if obj['retweet_count'] + obj['favorite_count'] > 0:
@@ -51,7 +51,7 @@ def web():
     yesterday = (datetime.date.today() - datetime.timedelta(1)).strftime('%Y-%m-%d')
     newsapi = NewsApiClient(api_key=os.environ.get("API_KEY"))
     mentions = []
-    all_articles = newsapi.get_everything(q='"Pacific Standard" -Time',
+    all_articles = newsapi.get_everything(q='"Pacific Standard" -"Pacific Standard Time"',
                                           from_param=yesterday,
                                           to=today,
                                           language='en',
