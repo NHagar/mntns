@@ -100,7 +100,7 @@ def build():
     }
     cur.execute("SELECT * FROM twitter WHERE shared=FALSE")
     tweets = cur.fetchall()
-    verified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == True]
+    verified = ['<%s|%s>' % (shortener.short(i[0]), i[1]) for i in tweets if i[5] == True]
     unverified = ['<%s|%s>' % (shortener.short(i[0]), i[1]) for i in tweets if i[5] == False]
     tw = {
         "fallback": "Twitter mentions",
