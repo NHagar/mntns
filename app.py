@@ -98,10 +98,25 @@ def build():
         'text': 'Mentions for ' + str(datetime.date.today()),
         'attachments': []
     }
+    unv1 = ''
+    unv2 = ''
+    unv3 = ''
+    unv4 = ''
     cur.execute("SELECT * FROM twitter WHERE shared=FALSE")
     tweets = cur.fetchall()
-    verified = ['<%s|%s>' % (shortener.short(i[0]), i[1]) for i in tweets if i[5] == True]
-    unverified = ['<%s|%s>' % (shortener.short(i[0]), i[1]) for i in tweets if i[5] == False]
+    verified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == True]
+    #unverified = ['<%s|%s>' % (i[0], i[1]) for i in tweets if i[5] == False]
+    for i in tweets:
+        if i[5] == False:
+            formatted = '<%s|%s>' % (i[0], i[1])
+            if len(unv1 + formatted) <= 1500:
+                unv1 += formatted + ', '
+            elif len(unv2 + formatted) <= 1500:
+                unv2 += formatted + ', '
+            elif len(unv3 + formatted) <= 1500:
+                unv3 += formatted + ', '
+            elif len(unv3 + formatted) <= 1500:
+                unv4 += formatted + ', '
     tw = {
         "fallback": "Twitter mentions",
         "color": "#4286f4",
@@ -113,8 +128,17 @@ def build():
             },
             {
                 "title": "Other",
-                "value": ', '.join(unverified)
+                "value": unv1
             },
+            {
+                "value": unv2
+            },
+            {
+                "value": unv3
+            },
+            {
+                "value": unv4
+            }
         ]
     }
     cur.execute("SELECT * FROM reddit WHERE shared=FALSE")
