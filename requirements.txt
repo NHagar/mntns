@@ -36,7 +36,7 @@ pyshorteners==0.6.1
 PySocks==1.6.8
 python-dateutil==2.7.3
 pyzmq==17.0.0
-requests==2.13.0
+requests==2.20.0
 requests-oauthlib==0.8.0
 simplegeneric==0.8.1
 six==1.11.0
